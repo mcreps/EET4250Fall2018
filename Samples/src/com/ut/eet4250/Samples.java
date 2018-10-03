@@ -92,6 +92,20 @@ public class Samples {
 	                logger.debug("Voltage: " + dataPacket[4]);
 	                logger.debug("Tube Temperature: " + dataPacket[5]);
 	                
+	                String sql = "INSERT INTO Voltage "
+	                		    + " (Date, ActivePower, ReactivePower, Current, Voltage, TubeTemperature) "
+	                			+ "  VALUES (?,?,?,?,?,?)";
+	                try(PreparedStatement ps = dataSource.prepareStatement(sql)){
+	                		ps.setTimestamp(1, timestamp);
+	                		ps.setDouble(2, convertStringToDouble(dataPacket[1]));
+	                		ps.setDouble(3, convertStringToDouble(dataPacket[2]));
+	                		ps.setDouble(4, convertStringToDouble(dataPacket[3]));
+	                		ps.setDouble(5, convertStringToDouble(dataPacket[4]));
+	                		ps.setDouble(6, convertStringToDouble(dataPacket[6]));
+	                }
+	                catch(Exception e) {
+	                		logger.error(e.getLocalizedMessage());
+	                }
 	            }
 
 	        } catch (FileNotFoundException e) {
@@ -120,6 +134,20 @@ public class Samples {
 		}
 		catch(Exception e) {
 			return false;
+		}
+	}
+	
+	/**
+	 * Converts a String to a double
+	 * @param s String to convert
+	 * @return
+	 */
+	static double convertStringToDouble(String s) {
+		try {
+			return Double.parseDouble(s);
+		}
+		catch(Exception e) {
+			return 0d;
 		}
 	}
 
