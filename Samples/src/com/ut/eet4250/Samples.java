@@ -54,10 +54,11 @@ public class Samples {
 				logger.error("SQL Syntax Error: " + e.getLocalizedMessage());
 			}
 		}*/
+		int rows = 0;
 		boolean first = true;
 		if (tableExists(dataSource, "Voltage")) {
 			logger.debug("Exists");
-			String line ="";
+			String line ="";	
 			try (BufferedReader br = new BufferedReader(new FileReader("voltage.csv"))){
 	            while ((line = br.readLine()) != null) {
 	            if (first) {
@@ -85,15 +86,15 @@ public class Samples {
 						logger.debug(e.getLocalizedMessage());
 					}
 	                
-	                logger.debug("Date: " + timestamp);
+/*	                logger.debug("Date: " + timestamp);
 	                logger.debug("Active Power: " + dataPacket[1]);
 	                logger.debug("Reactive Power: " + dataPacket[2]);
 	                logger.debug("Current : " + dataPacket[3]);
 	                logger.debug("Voltage: " + dataPacket[4]);
-	                logger.debug("Tube Temperature: " + dataPacket[5]);
+	                logger.debug("Tube Temperature: " + dataPacket[5]);*/
 	                
 	                String sql = "INSERT INTO Voltage "
-	                		    + " (Date, ActivePower, ReactivePower, Current, Voltage, TubeTemperature) "
+	                		    + " (EventDateTime, ActivePower, ReactivePower, Current, Voltage, TubeTemperature) "
 	                			+ "  VALUES (?,?,?,?,?,?)";
 	                try(PreparedStatement ps = dataSource.prepareStatement(sql)){
 	                		ps.setTimestamp(1, timestamp);
@@ -101,13 +102,13 @@ public class Samples {
 	                		ps.setDouble(3, convertStringToDouble(dataPacket[2]));
 	                		ps.setDouble(4, convertStringToDouble(dataPacket[3]));
 	                		ps.setDouble(5, convertStringToDouble(dataPacket[4]));
-	                		ps.setDouble(6, convertStringToDouble(dataPacket[6]));
+	                		ps.setDouble(6, convertStringToDouble(dataPacket[5]));
+	                		rows +=ps.executeUpdate();
 	                }
 	                catch(Exception e) {
 	                		logger.error(e.getLocalizedMessage());
 	                }
 	            }
-
 	        } catch (FileNotFoundException e) {
 	            logger.error(e.getLocalizedMessage());
 	        } catch (IOException e) {
@@ -117,6 +118,7 @@ public class Samples {
 		else {
 			logger.debug("Does not Exists");
 		}
+		logger.debug("Rows added: " + rows);
 		
 		/* Close the database connection */
 		databaseManager.closeConnection(dataSource);
