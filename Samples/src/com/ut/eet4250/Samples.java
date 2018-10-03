@@ -1,9 +1,18 @@
 package com.ut.eet4250;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -25,7 +34,7 @@ public class Samples {
 			System.exit(1);
 		}
 		
-		List<Instructor> list = new ArrayList<>();
+/*		List<Instructor> list = new ArrayList<>();
 		list.add(new Instructor("Anthony","Johnston","anthony.johnston@utoledo.edu"));
 		
 		String sql = "INSERT INTO Course_Instructor (FirstName, LastName, Email) VALUES (?,?,?)";
@@ -35,20 +44,83 @@ public class Samples {
 				ps.setString(2, i.getLastName());
 				ps.setString(3, i.getEmail());
 				int rowsAffected = ps.executeUpdate();
-	/*			try(ResultSet rs = ps.executeQuery()){
+				try(ResultSet rs = ps.executeQuery()){
 					while(rs.next()) {
 						System.out.printf("%s\t\t%s\n", rs.getString("CourseNo"), rs.getString("CourseName"));
 					}
-				}*/
+				}
 			}
 			catch(Exception e) {
 				logger.error("SQL Syntax Error: " + e.getLocalizedMessage());
 			}
+		}*/
+		boolean first = true;
+		if (tableExists(dataSource, "Voltage")) {
+			logger.debug("Exists");
+			String line ="";
+			try (BufferedReader br = new BufferedReader(new FileReader("voltage.csv"))){
+	            while ((line = br.readLine()) != null) {
+	            if (first) {
+		            	first = false;
+		            	continue;
+	            }
+	            	String[] dataPacket = line.split(",");	                
+	                // inserts goes here
+	                /*
+	                 * dataPacket[0] = Date
+	                 * dataPacket[1] = ActivePower
+	                 * dataPacket[2] = ReactivePower
+	                 * dataPacket[3] = Current
+	                 * dataPacket[4] = Voltage
+	                 * dataPacket[5] = Tube Temperature
+	                 * 
+	                 */
+	                Timestamp timestamp = null;
+					try {
+						SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
+
+					    Date parsedTimeStamp = dateFormat.parse(dataPacket[0]);
+					    timestamp = new Timestamp(parsedTimeStamp.getTime());
+					} catch (ParseException e) {
+						logger.debug(e.getLocalizedMessage());
+					}
+	                
+	                logger.debug("Date: " + timestamp);
+	                logger.debug("Active Power: " + dataPacket[1]);
+	                logger.debug("Reactive Power: " + dataPacket[2]);
+	                logger.debug("Current : " + dataPacket[3]);
+	                logger.debug("Voltage: " + dataPacket[4]);
+	                logger.debug("Tube Temperature: " + dataPacket[5]);
+	                
+	            }
+
+	        } catch (FileNotFoundException e) {
+	            logger.error(e.getLocalizedMessage());
+	        } catch (IOException e) {
+	        	logger.error(e.getLocalizedMessage());
+	        }
+		}
+		else {
+			logger.debug("Does not Exists");
 		}
 		
 		/* Close the database connection */
 		databaseManager.closeConnection(dataSource);
 		logger.debug("Program completed");
+	}
+	
+	static boolean tableExists(Connection dataSource, String tableName) {
+		
+		String sql = "SELECT * FROM " + tableName;
+		
+		try(PreparedStatement ps = dataSource.prepareStatement(sql)){
+			try(ResultSet rs = ps.executeQuery()){
+				return true;
+			}
+		}
+		catch(Exception e) {
+			return false;
+		}
 	}
 
 }
