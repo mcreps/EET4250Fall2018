@@ -39,6 +39,16 @@ public class Samples {
 			functions.run("SELECT MAX(VLOTAGE) AS VALUE FROM Voltage");
 			functions.run("SELECT MIN(VOLTAGE) AS VALUE FROM Voltage");
 			break;
+		case "averages" :
+			MysqlFunctions averages = new MysqlFunctions(dataSource);
+			averages.getAverages();
+			averages.getMinMax();
+			averages.addJune();
+			averages.addJuly();
+			averages.addAugust();
+			averages.getAverages();
+			break;
+			
 		default : 
 			System.out.println("Stupid choice..  Choice: "+ choice);
 			break;
